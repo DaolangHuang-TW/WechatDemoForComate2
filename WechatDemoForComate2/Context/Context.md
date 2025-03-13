@@ -45,6 +45,42 @@
   - 测试 UseCase 时，Mock 对应的 Repository。
   - 测试 Repository 时，Mock 假数据，避免实际网络请求。
   - Mock文件均为 class 类型
+
+  示例：
+  ```swift
+  import Testing
+  @testable import YourApp
+  
+  struct UserUseCaseTests {
+    @Test("Test get user profile success")
+    func testGetUserProfile_Success() async {
+        // Given
+        let mockRepository = MockUserRepository()
+        let useCase = UserUseCase(repository: mockRepository)
+        let expectedProfile = UserProfile(
+            profileImage: "https://example.com/profile.jpg",
+            avatar: "https://example.com/avatar.jpg",
+            nick: "TestUser",
+            username: "testuser"
+        )
+        mockRepository.userProfile = .success(expectedProfile)
+        
+        // When
+        let result = await useCase.getUserProfile()
+        
+        // Then
+        switch result {
+        case .success(let profile):
+            #expect(profile.profileImage == expectedProfile.profileImage)
+            #expect(profile.avatar == expectedProfile.avatar)
+            #expect(profile.nick == expectedProfile.nick)
+            #expect(profile.username == expectedProfile.username)
+        case .failure:
+            #expect(Bool(false), "Expected success but got failure")
+        }
+    }
+  }
+  ```
   
 ### 📂 目录结构建议
 
