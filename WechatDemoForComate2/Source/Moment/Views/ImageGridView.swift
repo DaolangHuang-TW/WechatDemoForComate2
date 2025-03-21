@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ImageGridView: View {
     let images: [ImageItem]
+    @StateObject private var previewViewModel = ImagePreviewViewModel()
     
     private let columns: [GridItem]
     
@@ -38,27 +39,16 @@ struct ImageGridView: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 6) {
             ForEach(images.indices, id: \.self) { index in
-                AsyncImage(url: URL(string: images[index].url)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .frame(width: itemWidth)
-                            .aspectRatio(contentMode: .fit)
-                    case .failure:
-                        Image(systemName: "photo")
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
-                    }
+                PreviewableImageView(
+                    url: images[index].url,
+                    aspectRatio: images.count == 1 ? 16/9 : 1,
+                    width: itemWidth
+                ) {
+                    previewViewModel.showPreview(images: images, index: index)
                 }
-                .aspectRatio(images.count == 1 ? 16/9 : 1, contentMode: .fill)
                 .frame(height: images.count == 1 ? 200 : 100)
-                .clipped()
-                .cornerRadius(4)
             }
         }
+        .imagePreviewable(viewModel: previewViewModel)
     }
 }

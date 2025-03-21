@@ -29,8 +29,15 @@ struct MomentItem: Codable, Identifiable {
     }
 }
 
-struct ImageItem: Codable {
+struct ImageItem: Codable, Identifiable {
+    let id = UUID()
     let url: String
+    var hdUrl: String? // 高清图片URL，如果为nil则使用url作为高清图
+    
+    enum CodingKeys: String, CodingKey {
+        case url
+        case hdUrl = "hd_url"
+    }
 }
 
 struct Sender: Codable {
