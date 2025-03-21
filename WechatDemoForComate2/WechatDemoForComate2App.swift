@@ -11,7 +11,7 @@ import SwiftUI
 struct WechatDemoForComate2App: App {
     var body: some Scene {
         WindowGroup {
-            WechatCircle()
+            MomentsView()
         }
     }
 }
