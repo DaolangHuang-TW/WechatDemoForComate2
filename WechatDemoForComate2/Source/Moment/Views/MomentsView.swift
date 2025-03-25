@@ -44,20 +44,13 @@ struct MomentsView: View {
     private var headerView: some View {
         ZStack(alignment: .bottomTrailing) {
             // 背景图
-            AsyncImage(url: URL(string: viewModel.userProfile?.profileImage ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    Color.gray
-                case .success(let image):
-                    image
-                        .resizable()
-                        .frame(width: UIScreen.main.bounds.width)
-                        .aspectRatio(contentMode: .fit)
-                case .failure:
-                    Color.gray
-                @unknown default:
-                    Color.gray
-                }
+            CachedImage(urlString: viewModel.userProfile?.profileImage ?? "") { image in
+                image
+                    .resizable()
+                    .frame(width: UIScreen.main.bounds.width)
+                    .aspectRatio(contentMode: .fit)
+            } placeholder: {
+                Color.gray
             }
             .frame(height: 300)
             .clipped()
@@ -71,20 +64,13 @@ struct MomentsView: View {
                         .foregroundColor(.white)
                         .shadow(radius: 2)
                     
-                    AsyncImage(url: URL(string: viewModel.userProfile?.avatar ?? "")) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        case .failure:
-                            Image(systemName: "person.circle.fill")
-                                .foregroundColor(.white)
-                        @unknown default:
-                            EmptyView()
-                        }
+                    CachedImage(urlString: viewModel.userProfile?.avatar ?? "") { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Image(systemName: "person.circle.fill")
+                            .foregroundColor(.white)
                     }
                     .frame(width: 70, height: 70)
                     .clipShape(Circle())

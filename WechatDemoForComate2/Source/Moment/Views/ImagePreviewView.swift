@@ -107,13 +107,26 @@ struct ImagePreviewView: View {
             min(images.count - 1, currentIndex + 1)
         ]
         
-        for index in indices where index != currentIndex {
-            let urlString = images[index].hdUrl ?? images[index].url
-            guard let url = URL(string: urlString) else { continue }
-            
-            URLSession.shared.dataTask(with: url) { _, _, _ in
-                // 只是预加载，不需要处理结果
-            }.resume()
+        Task {
+            for index in indices where index != currentIndex {
+                let urlString = images[index].hdUrl ?? images[index].url
+                guard let url = URL(string: urlString) else { continue }
+                
+                // 检查是否已经在缓存中
+                if await ImageCacheManager.shared.loadImageFromCache(url: url) != nil {
+                    continue
+                }
+                
+                // 如果不在缓存中，则下载并缓存
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: url)
+                    if let image = UIImage(data: data) {
+                        await ImageCacheManager.shared.saveImageToCache(image, url: url)
+                    }
+                } catch {
+                    print("Failed to preload image: \(error)")
+                }
+            }
         }
     }
 }
@@ -135,17 +148,12 @@ struct ZoomableImageView: View {
             ZStack {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
-                AsyncImage(url: URL(string: url)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .scaleEffect(scale)
-                            .offset(offset)
+                CachedImage(urlString: url) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .scaleEffect(scale)
+                        .offset(offset)
                             .gesture(
                                 DragGesture()
                                     .onChanged { value in
@@ -246,16 +254,9 @@ struct ZoomableImageView: View {
                             .onAppear {
                                 isLoading = false
                             }
-                    case .failure:
-                        VStack {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.largeTitle)
-                            Text("图片加载失败")
-                        }
-                        .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
-                    }
+                } placeholder: {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 }
                 
                 if isLoading {

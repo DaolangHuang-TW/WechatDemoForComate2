@@ -33,16 +33,15 @@ struct CachedImage<Content: View, Placeholder: View>: View {
             }
         }
         .onAppear {
-            loadImage()
+            loadImage(url: url)
         }
-        .onChange(of: url) { _ in
-            loadImage()
+        .onChange(of: url) { url in
+            loadImage(url: url)
         }
     }
     
-    private func loadImage() {
+    private func loadImage(url: URL?) {
         guard let url = url, !isLoading else { return }
-        
         isLoading = true
         
         Task {

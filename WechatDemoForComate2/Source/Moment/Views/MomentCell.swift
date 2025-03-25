@@ -7,20 +7,12 @@ struct MomentCell: View {
         VStack(alignment: .leading, spacing: 12) {
             // 用户信息
             HStack(spacing: 12) {
-                AsyncImage(url: URL(string: moment.sender!.avatar)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        Image(systemName: "person.circle.fill")
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
-                    }
+                CachedImage(urlString: moment.sender!.avatar) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    ProgressView()
                 }
                 .frame(width: 40, height: 40)
                 .clipShape(Circle())
