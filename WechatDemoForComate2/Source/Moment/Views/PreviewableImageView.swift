@@ -7,26 +7,18 @@ struct PreviewableImageView: View {
     var onTap: () -> Void
     
     var body: some View {
-        AsyncImage(url: URL(string: url)) { phase in
-            switch phase {
-            case .empty:
-                ProgressView()
-            case .success(let image):
-                image
-                    .resizable()
-                    .frame(width: width)
-                    .aspectRatio(contentMode: .fit)
-                    .onTapGesture {
-                        onTap()
-                    }
-            case .failure:
-                Image(systemName: "photo")
-                    .foregroundColor(.gray)
-            @unknown default:
-                EmptyView()
-            }
+        CachedImage(urlString: url) { image in
+            image
+                .resizable()
+                .frame(width: width)
+                .aspectRatio(contentMode: .fit)
+                .onTapGesture {
+                    onTap()
+                }
+        } placeholder: {
+            ProgressView()
         }
-        .aspectRatio(aspectRatio, contentMode: .fill)
+        .aspectRatio(aspectRatio, contentMode: .fit)
         .clipped()
         .cornerRadius(4)
     }
